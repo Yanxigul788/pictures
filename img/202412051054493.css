@@ -1,0 +1,102 @@
+@charset "UTF-8";
+
+body {
+    background-color: #fff;
+    margin: 0 20% !important;
+    max-width: 2000px !important
+}
+
+#cqy-title {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.5
+}
+
+p img {
+    display: block
+}
+
+.layui-tab-title {
+    margin-bottom: 0 !important
+}
+
+#footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    color: #a6a2a2 !important;
+    height: 80px !important;
+    justify-content: space-around !important;
+    margin-top: 45px !important;
+    font-size: 13px !important;
+    line-height: 1.8em !important;
+    padding-bottom: 40px !important
+}
+
+.tab-main {
+    overflow-y: auto;
+    height: 450px;
+    padding: 10px
+}
+
+.tab-list-item {
+    display: flex;
+    padding: 5px 0 5px 0;
+    flex-direction: column
+}
+
+.tab-list-item-title {
+    font-size: 16px !important;
+    line-height: 1.8em !important
+}
+
+.tab-list-item-title span {
+    font-size: 13px !important;
+    color: #1677ff !important;
+    line-height: 1.8em !important
+}
+
+.tab-list-item-main {
+    margin-top: 3px !important
+}
+
+.tag-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 3px
+}
+
+.cqy-tag {
+    width: 54px;
+    height: 25px;
+    text-align: center;
+    line-height: 25px;
+    border-radius: 6px;
+    margin-right: 6px;
+    margin-left: 6px;
+    margin-bottom: 6px
+}
+
+.tag-selected {
+    border: none;
+    box-shadow: #1d232a 0 0 6px -1px
+}
+
+.footer-desc {
+    text-align: center
+}
+
+.footer-describe {
+    text-align: center
+}
+
+.markdown-fade-in {
+    opacity: 0;
+    transition: opacity .5s ease-in
+}
+
+.markdown-fade-loaded {
+    opacity: 1
+}
