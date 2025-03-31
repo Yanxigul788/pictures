@@ -1,0 +1,629 @@
+//出库新增格式 CRM202503119999
+
+
+//优化销售出库单
+表out_order新增字段f_id：用以存储金蝶中的Id ，即后续修改保存接口中的FID
+
+销售出库单-ERP获取：新增获取Id字段并保存
+
+......出库单可能是手动新增的，如何获取FID？单独的操作按钮；【推送到金蝶】，数据分类处理；对于无FID的数据，不批量，单条--》查询获取FID ,更新对应物流信息
+
+////
+
+//修改出货扫描逻辑 
+新增前端必填字段：快递单号,并携带请求 出库单号、快递单号、fid
+
+条码扫描完成,插入一条信息到中转表A：销售订单号、快递单号、fid、创建时间
+
+2小时读取一次：distinct ....结合【金蝶-快递信息推送】
+
+
+///关于销售订单-快递单推送记录：；1对1，但是在执行的时候，批量执行（暂不上队列。定时执行推送）
+
+执行中转表A/消息队列消费:
+
+筛选销售出库单 --》转向A
+
+以[{
+"快递单号":xxxx,
+"orderList":[{
+  "order_no":"销售出库单号"
+  "FID":"金蝶中的Id"
+  },
+  ......
+  ]
+}]组织数据，参考出库订单ERP获取（订单发布、产品明细绑定、客户信息新增等）--快递单号创建、对应出库单绑定（金蝶推送记录生成）
+
+主表delivery，分表delivery_order，显示与绑定参考 产品编码+部件关系管理
+
+表delivery不存在快递单号记录，则新增，并返回delivery_id；若存在，获取delivery_id
+
+将该快递单号下对应的销售订单批量绑定到明细表delivery_order: delivery_id  order_id  FID  create_date  update_date 
+
+生成推送日志：
+单据类型   jsondata  描述   状态（已创建、推送成功、推送失败） 结果  创建时间   
+
+文字描述：根据jsondata抽取
+${time},${xxx}操作。${单据类型}${order_no}、${单据类型}${order_no}......新增绑定物流单号${单号1}
+
+
+
+仅保存一个：
+实际未保存成功
+{
+"IsDeleteEntry": "false",  
+"IsUserModelInit":"true", 
+    "Model": {
+        "FID": 165281,
+        "FOutStockTrace": [
+            {
+               "FLOGCOMID.FCODE": "tuisongzhuanyong",
+                "FCARRYBILLNO": "值连接录入测试",
+                "FCARRYBILLNOTYPE": "M",
+            }
+        ]
+    }
+}
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "IsSuccess": true, 
+            "Errors": [ ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165281, 
+                    "Number": "XSCK20250317018", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 0
+        }, 
+        "Id": 165281, 
+        "Number": "XSCK20250317018", 
+        "NeedReturnData": [
+            { }
+        ]
+    }
+}
+
+////////////////////////
+
+
+{
+    "IsDeleteEntry": "false",  
+"IsUserModelInit":"true", 
+    "Model": {
+       "FID": 111190,
+        "FOutStockTrace": [
+            {
+               "FLogComId": {
+                    "FCODE": "tuisongzhuanyong"
+                },
+                "FCarryBillNo": "DPK多销售单批量新增",
+                "FCarryBillNoType": "M",
+            }
+        ]
+    }
+}
+
+
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "您要读取的数据在系统中不存在,可能已经被删除！[ID=111190,Type=SAL_OUTSTOCK,TableName=T_SAL_OUTSTOCK]
+Server stack trace: 
+   在 Kingdee.BOS.Orm.DataManager.DataManagerImplement.Read(Object oid, OperateOption option)
+   在 Kingdee.BOS.App.Core.BusinessDataReader.LoadSingle(Object pk, BusinessInfo businessInfo, OQLFilter oFilter, Boolean loadReferenceData)
+   在 Kingdee.BOS.App.Core.ViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+
+Exception rethrown at [0]: 
+   在 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   在 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   在 Kingdee.BOS.Contracts.IViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.ServiceHelper.BusinessDataServiceHelper.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.Model.Bill.BillModel.Load(Object pk)
+   在 Kingdee.BOS.WebApi.FormService.Save.Revole()
+   在 Kingdee.BOS.WebApi.FormService.Save.Execute()
+   在 Kingdee.BOS.WebApi.FormService.BillOperationService.ExecuteOperation(FormOperation op, String data)", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessEntitys": [ ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 4
+        }
+    }
+}
+
+
+///////自定义需返回字段   
+//////"NeedReturnFields":["FID","FLOGISTICSNOS","FBILLNO"],   FLOGISTICSNOS有长度限制，不一定把所有明细表的单号都显示出来
+
+{
+    "Model": [
+        {
+            "FID": 165431, 
+            "FOutStockTrace": [
+                {
+                    "FLogComId": {
+                        "FCODE": "tuisongzhuanyong"
+                    }, 
+                    "FCarryBillNo": "KY4000684821088", 
+                    "FCarryBillNoType": "M"
+                }
+            ]
+        }, 
+        {
+            "FID": 165142, 
+            "FOutStockTrace": [
+                {
+                    "FLogComId": {
+                        "FCODE": "tuisongzhuanyong"
+                    }, 
+                    "FCarryBillNo": "DPK364712088546", 
+                    "FCarryBillNoType": "M"
+                }, 
+                {
+                    "FLogComId": {
+                        "FCODE": "tuisongzhuanyong"
+                    }, 
+                    "FCarryBillNo": "KY4000625830929", 
+                    "FCarryBillNoType": "M"
+                }
+            ]
+        }, 
+        {
+            "FID": 165451, 
+            "FOutStockTrace": [
+                {
+                    "FLogComId": {
+                        "FCODE": "tuisongzhuanyong"
+                    }, 
+                    "FCarryBillNo": "KY4000615884350", 
+                    "FCarryBillNoType": "M"
+                }
+            ]
+        }
+    ], 
+    "IsDeleteEntry": false, 
+    "IsUserModelInit": true, 
+    "BatchCount": 2, 
+    "NeedReturnFields": [
+        "FID", 
+        "FBILLNO", 
+        "FCARRYBILLNO", 
+        "FLOGCOMID.FCODE", 
+        "FCARRYBILLNOTYPE"
+    ]
+}
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "IsSuccess": true, 
+            "Errors": [ ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165281, 
+                    "Number": "XSCK20250317018", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 0
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165281, 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100133, 
+                        "FCarryBillNo": "KY4000684821088"
+                    }, 
+                    {
+                        "FEntryID": 100134, 
+                        "FCarryBillNo": "KY4000694855292"
+                    }
+                ], 
+                "FBillNo": "XSCK20250317018"
+            }
+        ]
+    }
+}
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "您要读取的数据在系统中不存在,可能已经被删除！[ID=165521,Type=SAL_OUTSTOCK,TableName=T_SAL_OUTSTOCK]
+Server stack trace: 
+   在 Kingdee.BOS.Orm.DataManager.DataManagerImplement.Read(Object oid, OperateOption option)
+   在 Kingdee.BOS.App.Core.BusinessDataReader.LoadSingle(Object pk, BusinessInfo businessInfo, OQLFilter oFilter, Boolean loadReferenceData)
+   在 Kingdee.BOS.App.Core.ViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+
+Exception rethrown at [0]: 
+   在 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   在 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   在 Kingdee.BOS.Contracts.IViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.ServiceHelper.BusinessDataServiceHelper.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.Model.Bill.BillModel.Load(Object pk)
+   在 Kingdee.BOS.WebApi.FormService.BuilderBillData.Execute()
+   在 Kingdee.BOS.WebApi.FormService.BatchSaveService.BuilderBillData(IDynamicFormView view, Boolean numberSearch, List`1 saveObjs, Object obj, IOperationResult result, Int32 rowIndex, StringBuilder sb, List`1 serviceIndex)", 
+                    "DIndex": 1
+                }
+            ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165281, 
+                    "Number": "XSCK20250317018", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 4
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165281, 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100118, 
+                        "FCarryBillNo": "DPK331286765075"
+                    }, 
+                    {
+                        "FEntryID": 100119, 
+                        "FCarryBillNo": "KY4000684821088"
+                    }, 
+                    {
+                        "FEntryID": 100121, 
+                        "FCarryBillNo": "DPK多销售单批量新增"
+                    }, 
+                    {
+                        "FEntryID": 100126, 
+                        "FCarryBillNo": "DPK多销售单批量新增"
+                    }
+                ], 
+                "FBillNo": "XSCK20250317018"
+            }
+        ]
+    }
+}
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "IsSuccess": true, 
+            "Errors": [ ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165281, 
+                    "Number": "XSCK20250317018", 
+                    "DIndex": 0
+                }, 
+                {
+                    "Id": 111192, 
+                    "Number": "XSCK20220523002", 
+                    "DIndex": 1
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 0
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165281, 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100118, 
+                        "FCarryBillNo": "DPK331286765075"
+                    }, 
+                    {
+                        "FEntryID": 100119, 
+                        "FCarryBillNo": "KY4000684821088"
+                    }, 
+                    {
+                        "FEntryID": 100121, 
+                        "FCarryBillNo": "DPK多销售单批量新增"
+                    }, 
+                    {
+                        "FEntryID": 100127, 
+                        "FCarryBillNo": "字段长度限制测试"
+                    }, 
+                    {
+                        "FEntryID": 100128, 
+                        "FCarryBillNo": "是否返回新增内容测试"
+                    }, 
+                    {
+                        "FEntryID": 100129, 
+                        "FCarryBillNo": "测试2"
+                    }
+                ], 
+                "FBillNo": "XSCK20250317018"
+            }, 
+            {
+                "FID": 111192, 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100122, 
+                        "FCarryBillNo": "批量保存测试单号"
+                    }, 
+                    {
+                        "FEntryID": 100130, 
+                        "FCarryBillNo": "测试2"
+                    }
+                ], 
+                "FBillNo": "XSCK20220523002"
+            }
+        ]
+    }
+}
+
+//////////
+
+
+通过批量保存接口接口 推送到金蝶
+{
+"IsDeleteEntry": "false",  
+"IsUserModelInit":"true", 
+"Model": [{
+        "FID": 111190,
+        "FOutStockTrace": [
+            {
+               "FLogComId": {
+                    "FCODE": "tuisongzhuanyong"
+                },
+                "FCarryBillNo": "DPK多销售单批量新增",
+                "FCarryBillNoType": "M",
+            }
+        ]
+    },
+	{
+        "FID": 111192,
+        "FOutStockTrace": [
+            {
+               "FLogComId": {
+                    "FCODE": "tuisongzhuanyong"
+                },
+                "FCarryBillNo": "批量保存测试单号",
+                "FCarryBillNoType": "M",
+            }
+        ]
+    }
+    ]
+}
+
+部分成功/部分失败 ->批量保存，存在部分保存成功，部分保存失败
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "您要读取的数据在系统中不存在,可能已经被删除！[ID=111192520,Type=SAL_OUTSTOCK,TableName=T_SAL_OUTSTOCK]
+Server stack trace: 
+   在 Kingdee.BOS.Orm.DataManager.DataManagerImplement.Read(Object oid, OperateOption option)
+   在 Kingdee.BOS.App.Core.BusinessDataReader.LoadSingle(Object pk, BusinessInfo businessInfo, OQLFilter oFilter, Boolean loadReferenceData)
+   在 Kingdee.BOS.App.Core.ViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+
+Exception rethrown at [0]: 
+   在 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   在 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   在 Kingdee.BOS.Contracts.IViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.ServiceHelper.BusinessDataServiceHelper.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.Model.Bill.BillModel.Load(Object pk)
+   在 Kingdee.BOS.WebApi.FormService.BuilderBillData.Execute()
+   在 Kingdee.BOS.WebApi.FormService.BatchSaveService.BuilderBillData(IDynamicFormView view, Boolean numberSearch, List`1 saveObjs, Object obj, IOperationResult result, Int32 rowIndex, StringBuilder sb, List`1 serviceIndex)", 
+                    "DIndex": 1
+                }
+            ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 111190, 
+                    "Number": "XSCK20220521046", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 4
+        }, 
+        "NeedReturnData": [ ]
+    }
+}
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "您要读取的数据在系统中不存在,可能已经被删除！[ID=165521,Type=SAL_OUTSTOCK,TableName=T_SAL_OUTSTOCK]
+Server stack trace: 
+   在 Kingdee.BOS.Orm.DataManager.DataManagerImplement.Read(Object oid, OperateOption option)
+   在 Kingdee.BOS.App.Core.BusinessDataReader.LoadSingle(Object pk, BusinessInfo businessInfo, OQLFilter oFilter, Boolean loadReferenceData)
+   在 Kingdee.BOS.App.Core.ViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+
+Exception rethrown at [0]: 
+   在 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   在 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   在 Kingdee.BOS.Contracts.IViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.ServiceHelper.BusinessDataServiceHelper.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.Model.Bill.BillModel.Load(Object pk)
+   在 Kingdee.BOS.WebApi.FormService.BuilderBillData.Execute()
+   在 Kingdee.BOS.WebApi.FormService.BatchSaveService.BuilderBillData(IDynamicFormView view, Boolean numberSearch, List`1 saveObjs, Object obj, IOperationResult result, Int32 rowIndex, StringBuilder sb, List`1 serviceIndex)", 
+                    "DIndex": 0
+                }, 
+                {
+                    "FieldName": null, 
+                    "Message": "没有数据需要保存。", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessEntitys": [ ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 4
+        }, 
+        "NeedReturnData": [ ]
+    }
+}
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "ResolveFiled_InnerEx解析字段(Key:FCarryBillNo,name:物流单号)时发生异常,异常信息:寻找实体上CarryBillNo对应的属性描述符失败，实体不存在此属性！[EntityType：SAL_OUTSTOCK Propeyties:Id FFormId SrcEntityDisa BillNo DocumentStatus SaleOrgId_Id SaleOrgId Date StockOrgId_Id StockOrgId CustomerID_Id CustomerID DeliveryDeptID_Id DeliveryDeptID SaleDeptID_Id SaleDeptID StockerGroupID_Id StockerGroupID StockerID_Id StockerID SalesGroupID_Id SalesGroupID SalesManID_Id SalesManID CarrierID_Id CarrierID CarriageNO ReceiverID_Id ReceiverID SettleID_Id SettleID PayerID_Id PayerID FCreateDate FModifierId_Id FModifierId FModifyDate FCreatorId_Id FCreatorId ApproverID_Id ApproverID ApproveDate CancelStatus CancellerID_Id CancellerID CancelDate BillTypeID_Id BillTypeID OwnerTypeIdHead OwnerIdHead_Id OwnerIdHead BussinessType ReceiveAddress HeadLocationId_Id HeadLocationId CreditCheckResult TransferBizType_Id TransferBizType CorrespondOrgId_Id CorrespondOrgId ReceiverContactID_Id ReceiverContactID IsInterLegalPerson FGenFromPOS_CMK FLinkPhone FLinkMan FBranchId_Id FBranchId ScanBox CDateOffsetUnit CDateOffsetValue PlanRecAddress IsTotalServiceOrCost Note DisassemblyFlag FSHOPNUMBER FGYDATE FSALECHANNEL LogisticsNos PRESETBASE2_Id PRESETBASE2 PRESETBASE1_Id PRESETBASE1 PRESETASSISTANT1_Id PRESETASSISTANT1 PRESETASSISTANT2_Id PRESETASSISTANT2 F_abcd_PrintTimes F_abcd_Assistant_Id F_abcd_Assistant F_abcd_Remarks SAL_OUTSTOCKFIN SAL_OUTSTOCKENTRY OutStockTrace BOS_ConvertTakeDataInfo ]   在 Kingdee.BOS.WebApi.FormService.MapPropertyService.MapComplexProperty(String pkProperty, Dictionary`2 sourceObj, DynamicObject targetObj, Int32 rowIndex, HashSet`1 NeedUpDateFields)
+   在 Kingdee.BOS.WebApi.FormService.BuilderBillData.Execute()
+   在 Kingdee.BOS.WebApi.FormService.BatchSaveService.BuilderBillData(IDynamicFormView view, Boolean numberSearch, List`1 saveObjs, Object obj, IOperationResult result, Int32 rowIndex, StringBuilder sb, List`1 serviceIndex)", 
+                    "DIndex": 0
+                }, 
+                {
+                    "FieldName": null, 
+                    "Message": "没有数据需要保存。", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessEntitys": [ ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 4
+        }, 
+        "NeedReturnData": [ ]
+    }
+}
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "接口参数data格式错误，无法解析为JSON。Invalid property identifier character: {. Line 5, position 8.", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessEntitys": [ ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 8
+        }
+    }
+}
+
+/////////////////////清空物流跟踪信息
+{
+"IsDeleteEntry": "true",  
+"IsUserModelInit":"true", 
+"NeedReturnFields":["FID", "FBILLNO", "FCARRYBILLNO"],
+ "Model": [
+        {
+            "FID": 165350, 
+            "FOutStockTrace": [
+             {}
+            ]
+        }, 
+        {
+            "FID": 165137, 
+            "FOutStockTrace": [
+             {}
+            ]
+        }, 
+        {
+            "FID": 165142, 
+            "FOutStockTrace": [{}
+            ]
+        }, 
+        {
+            "FID": 165148, 
+            "FOutStockTrace": [{}
+            ]
+        }, 
+        {
+            "FID": 165308, 
+            "FOutStockTrace": [{}
+            ]
+        }, 
+        {
+            "FID": 165276, 
+            "FOutStockTrace": [{}
+               
+            ]
+        }, 
+        {
+            "FID": 165238, 
+            "FOutStockTrace": [{}
+            ]
+        }
+    ]
+}
+
+
+{
+"IsDeleteEntry": "true",  
+"IsUserModelInit":"true", 
+"NeedReturnFields":["FID", "FBILLNO", "FCARRYBILLNO"],
+ "Model": [
+        {
+            "FID": 165282, 
+            "FOutStockTrace": [
+             {}
+            ]
+        }, 
+        {
+            "FID": 165296, 
+            "FOutStockTrace": [
+             {}
+            ]
+        }, 
+        {
+            "FID": 165280, 
+            "FOutStockTrace": [{}
+            ]
+        }, 
+        {
+            "FID": 165281, 
+            "FOutStockTrace": [{}
+            ]
+        }, 
+        {
+            "FID": 165278, 
+            "FOutStockTrace": [{}
+            ]
+        }, 
+        {
+            "FID": 165279, 
+            "FOutStockTrace": [{}
+               
+            ]
+        }, 
+        {
+            "FID": 165238, 
+            "FOutStockTrace": [{}
+            ]
+        }
+    ]
+}
