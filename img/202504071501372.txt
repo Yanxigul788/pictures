@@ -1,0 +1,244 @@
+如果基本信息 - 物流单号无法自动更新 - 调用批量保存接口，批量更新基本信息FLOGISTICSNOS
+
+{
+    "IsDeleteEntry": false, 
+    "IsUserModelInit": true, 
+    "BatchCount": 2,
+    "NeedReturnFields":["FID","FBILLNO","FLOGISTICSNOS"],
+    "Model": [
+        {
+            "FID": 165142, 
+            "FLOGISTICSNOS": "德邦快递DPK364712088546,跨越速运KY4000625830929,顺丰速运SF0269103588343"
+        },
+       {
+            "FID": 111192, 
+            "FLOGISTICSNOS": "德邦快递DPK364711837893"
+       }
+    ]
+}
+
+
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "IsSuccess": true, 
+            "Errors": [ ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165142, 
+                    "Number": "XSCK20250314016", 
+                    "DIndex": 0
+                }, 
+                {
+                    "Id": 111192, 
+                    "Number": "XSCK20220523002", 
+                    "DIndex": 1
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 0
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165142, 
+                "FBillNo": "XSCK20250314016", 
+                "FLogisticsNos": "德邦快递DPK364712088546,跨越速运KY4000625830929,顺丰速运SF0269103588343"
+            }, 
+            {
+                "FID": 111192, 
+                "FBillNo": "XSCK20220523002", 
+                "FLogisticsNos": "德邦快递DPK364711837893"
+            }
+        ]
+    }
+}
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////
+
+{
+    "IsDeleteEntry": false, 
+    "IsUserModelInit": true, 
+    "BatchCount": 2,
+    "NeedReturnFields":["FID","FBILLNO","FCARRYBILLNO"],
+    "Model": [
+        {
+            "FID": 165142, 
+            "FOutStockTrace": [
+                {
+                    "FLogComId": {
+                        "FCODE": "debangkuaidi"
+                    }, 
+                    "FCarryBillNo": "德邦快递DPK364712088546", 
+                    "FCarryBillNoType": "M"
+                }, 
+                {
+                    "FLogComId": {
+                        "FCODE": "kuayuesuyun"
+                    }, 
+                    "FCarryBillNo": "跨越速运KY4000625830929", 
+                    "FCarryBillNoType": "M"
+                }
+            ]
+        }
+     
+    ]
+}
+
+//单个成功
+{
+    "Result": {
+        "ResponseStatus": {
+            "IsSuccess": true, 
+            "Errors": [ ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165142, 
+                    "Number": "XSCK20250314016", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 0
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165142, 
+                "FBillNo": "XSCK20250314016", 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100212, 
+                        "FCarryBillNo": "德邦快递DPK364712088546"
+                    }, 
+                    {
+                        "FEntryID": 100213, 
+                        "FCarryBillNo": "跨越速运KY4000625830929"
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+//部分成功 + 部分失败
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "ErrorCode": 500, 
+            "IsSuccess": false, 
+            "Errors": [
+                {
+                    "FieldName": null, 
+                    "Message": "您要读取的数据在系统中不存在,可能已经被删除！[ID=165521,Type=SAL_OUTSTOCK,TableName=T_SAL_OUTSTOCK]
+Server stack trace: 
+   在 Kingdee.BOS.Orm.DataManager.DataManagerImplement.Read(Object oid, OperateOption option)
+   在 Kingdee.BOS.App.Core.BusinessDataReader.LoadSingle(Object pk, BusinessInfo businessInfo, OQLFilter oFilter, Boolean loadReferenceData)
+   在 Kingdee.BOS.App.Core.ViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+
+Exception rethrown at [0]: 
+   在 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   在 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   在 Kingdee.BOS.Contracts.IViewService.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.ServiceHelper.BusinessDataServiceHelper.LoadSingle(Context ctx, Object pk, BusinessInfo businessInfo, OQLFilter ofilter)
+   在 Kingdee.BOS.Model.Bill.BillModel.Load(Object pk)
+   在 Kingdee.BOS.WebApi.FormService.BuilderBillData.Execute()
+   在 Kingdee.BOS.WebApi.FormService.BatchSaveService.BuilderBillData(IDynamicFormView view, Boolean numberSearch, List`1 saveObjs, Object obj, IOperationResult result, Int32 rowIndex, StringBuilder sb, List`1 serviceIndex)", 
+                    "DIndex": 1
+                }
+            ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165142, 
+                    "Number": "XSCK20250314016", 
+                    "DIndex": 0
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 4
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165142, 
+                "FBillNo": "XSCK20250314016", 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100212, 
+                        "FCarryBillNo": "德邦快递DPK364712088546"
+                    }, 
+                    {
+                        "FEntryID": 100213, 
+                        "FCarryBillNo": "跨越速运KY4000625830929"
+                    }, 
+                    {
+                        "FEntryID": 100217, 
+                        "FCarryBillNo": "顺丰速运SF0269103588343"
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+////全部成功
+
+{
+    "Result": {
+        "ResponseStatus": {
+            "IsSuccess": true, 
+            "Errors": [ ], 
+            "SuccessEntitys": [
+                {
+                    "Id": 165142, 
+                    "Number": "XSCK20250314016", 
+                    "DIndex": 0
+                }, 
+                {
+                    "Id": 111192, 
+                    "Number": "XSCK20220523002", 
+                    "DIndex": 1
+                }
+            ], 
+            "SuccessMessages": [ ], 
+            "MsgCode": 0
+        }, 
+        "NeedReturnData": [
+            {
+                "FID": 165142, 
+                "FBillNo": "XSCK20250314016", 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100212, 
+                        "FCarryBillNo": "德邦快递DPK364712088546"
+                    }, 
+                    {
+                        "FEntryID": 100213, 
+                        "FCarryBillNo": "跨越速运KY4000625830929"
+                    }, 
+                    {
+                        "FEntryID": 100220, 
+                        "FCarryBillNo": "顺丰速运SF0269103588343"
+                    }
+                ]
+            }, 
+            {
+                "FID": 111192, 
+                "FBillNo": "XSCK20220523002", 
+                "FOutStockTrace": [
+                    {
+                        "FEntryID": 100221, 
+                        "FCarryBillNo": "德邦快递DPK364711837893"
+                    }
+                ]
+            }
+        ]
+    }
+}
